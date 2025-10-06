@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/transaction_history_screen.dart';
+import 'screens/budget_screen.dart';
+import 'screens/reports_screen.dart';
+import 'screens/settings_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   @override
@@ -13,13 +16,9 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _screens = [
     HomeScreen(),
     TransactionHistoryScreen(),
-    // We'll add more screens later
-    Center(
-        child: Text('Reports\n(Coming Soon)',
-            textAlign: TextAlign.center, style: TextStyle(fontSize: 18))),
-    Center(
-        child: Text('Settings\n(Coming Soon)',
-            textAlign: TextAlign.center, style: TextStyle(fontSize: 18))),
+    BudgetScreen(),
+    ReportsScreen(), // Added Reports screen
+    SettingsScreen(),
   ];
 
   @override
@@ -44,6 +43,10 @@ class _MainNavigationState extends State<MainNavigation> {
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'History',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet),
+            label: 'Budgets',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
