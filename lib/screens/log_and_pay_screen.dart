@@ -158,173 +158,111 @@ class _LogAndPayScreenState extends State<LogAndPayScreen> with WidgetsBindingOb
   void _showUpiInputDialog(String appType, int transactionId) {
     final upiController = TextEditingController();
     final nameController = TextEditingController(text: 'Merchant');
-    String inputType = 'UPI ID'; // or 'Phone'
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Row(
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(_getPaymentAppIcon(appType), color: Colors.green),
+            SizedBox(width: 12),
+            Text('Enter UPI Details'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(_getPaymentAppIcon(appType), color: Colors.green),
-              SizedBox(width: 12),
-              Text('Enter Payment Details'),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Amount: ₹${_amountController.text}',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+              Text(
+                'Amount: ₹${_amountController.text}',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+              ),
+              SizedBox(height: 20),
+              
+              // UPI ID Input
+              TextField(
+                controller: upiController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'UPI ID',
+                  hintText: 'merchant@paytm',
+                  helperText: 'Example: username@okaxis, shop@ybl',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  prefixIcon: Icon(Icons.alternate_email, color: Colors.green),
                 ),
-                SizedBox(height: 16),
-                
-                // Toggle between UPI ID and Phone
-                Row(
+              ),
+              SizedBox(height: 16),
+              
+              // Merchant Name (Optional)
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  labelText: 'Payee Name (Optional)',
+                  hintText: 'Shop/Person name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  prefixIcon: Icon(Icons.person, color: Colors.green),
+                ),
+              ),
+              SizedBox(height: 16),
+              
+              // Info text
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
                   children: [
+                    Icon(Icons.info_outline, size: 20, color: Colors.blue),
+                    SizedBox(width: 12),
                     Expanded(
-                      child: ChoiceChip(
-                        label: Text('UPI ID'),
-                        selected: inputType == 'UPI ID',
-                        selectedColor: Colors.green.shade100,
-                        onSelected: (selected) {
-                          setState(() {
-                            inputType = 'UPI ID';
-                            upiController.clear();
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: ChoiceChip(
-                        label: Text('Phone Number'),
-                        selected: inputType == 'Phone',
-                        selectedColor: Colors.green.shade100,
-                        onSelected: (selected) {
-                          setState(() {
-                            inputType = 'Phone';
-                            upiController.clear();
-                          });
-                        },
+                      child: Text(
+                        '${_getAppName(appType)} will open with these details',
+                        style: TextStyle(fontSize: 12, color: Colors.blue.shade800),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 16),
-                
-                // UPI ID / Phone Number Input
-                TextField(
-                  controller: upiController,
-                  keyboardType: inputType == 'Phone' 
-                      ? TextInputType.phone 
-                      : TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: inputType == 'UPI ID' 
-                        ? 'Enter UPI ID (e.g., user@paytm)' 
-                        : 'Enter Phone Number',
-                    hintText: inputType == 'UPI ID' 
-                        ? 'username@bank' 
-                        : '9876543210',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(
-                      inputType == 'UPI ID' ? Icons.alternate_email : Icons.phone,
-                      color: Colors.green,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-                
-                // Merchant Name (Optional)
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Payee Name (Optional)',
-                    hintText: 'Shop/Person name',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person, color: Colors.green),
-                  ),
-                ),
-                SizedBox(height: 12),
-                
-                // Info text
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 16, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Your ${_getAppName(appType)} app will open for payment',
-                          style: TextStyle(fontSize: 12, color: Colors.blue.shade800),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              final upiId = upiController.text.trim();
+              if (upiId.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Please enter UPI ID')),
+                );
+                return;
+              }
+              if (!upiId.contains('@')) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Invalid UPI ID. Format: username@bank')),
+                );
+                return;
+              }
+              
+              Navigator.pop(context);
+              _openPaymentApp(appType, transactionId, upiId, nameController.text.trim());
+            },
+            icon: Icon(Icons.payment),
+            label: Text('Proceed to Pay'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                if (upiController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Please enter ${inputType}')),
-                  );
-                  return;
-                }
-                
-                String upiId = upiController.text.trim();
-                
-                // If phone number, convert to UPI format for the selected app
-                if (inputType == 'Phone') {
-                  upiId = _convertPhoneToUPI(upiId, appType);
-                }
-                
-                Navigator.pop(context);
-                _openPaymentApp(appType, transactionId, upiId, nameController.text.trim());
-              },
-              icon: Icon(Icons.payment),
-              label: Text('Proceed to Pay'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
-  }
-
-  String _convertPhoneToUPI(String phone, String appType) {
-    // Remove any spaces or special characters
-    phone = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    
-    // Convert phone to UPI based on app
-    switch (appType) {
-      case 'gpay':
-        return '$phone@okaxis'; // Google Pay uses various banks
-      case 'phonepe':
-        return '$phone@ybl'; // PhonePe uses Yes Bank
-      case 'paytm':
-        return '$phone@paytm'; // Paytm
-      default:
-        return '$phone@paytm';
-    }
   }
 
   IconData _getPaymentAppIcon(String appType) {
